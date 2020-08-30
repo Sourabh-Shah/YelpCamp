@@ -1,36 +1,42 @@
-var express 		= require("express");
-	app 			= express();
-	bodyParser 		= require("body-parser");
-	mongoose	    = require("mongoose");
-	campground      = require("./models/campground");
-	seedDB 			= require("./seed");
-	comment  		= require("./models/comment");
+var express 		= require("express"),
+	app 			= express(),
+	bodyParser 		= require("body-parser"),
+	mongoose	    = require("mongoose"),
+	campground      = require("./models/campground"),
+	seedDB 			= require("./seed"),
+	comment  		= require("./models/comment"),
+	passport 		= require ("passport"),
+	localStrategy 	= require("passport-local"),
+	user 			= require("./models/user");
 
+// ============
+// Mongoose code to connect the  database
+// ============	
 mongoose.connect("mongodb://localhost:27017/yelp_camp",{useNewUrlParser: true,useUnifiedTopology : true});
 app.use(express.static(__dirname + "/public"));
 app.use(bodyParser.urlencoded({extended : true}));
 app.set("view engine","ejs");
+// seeding the database with initial data
 seedDB();
 
-//Schema Setup
+// passport congiguration
+app.use(require("express-session")({
+	secret :"East or West India is the best",
+	resave : false,
+	saveUninitialized : false
+}))
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new localStrategy(user.authenticate()));
+passport.serializeUser(user.serializeUser());
+passport.deserializeUser(user.deserializeUser());
 
 
-// campground.create(
-// 	{
-// 		name : "Salomon Creesk", 
-// 		image : "https://images.pexels.com/photos/1061640/pexels-photo-1061640.jpeg?auto=compress&cs=tinysrgb&h=350",
-// 		description : "This is a huge granite hill , no bathrooms .. No water .. Beautiful granite"
-// 	},
-// 	function(err,campground){
-// 		if(err){
-// 			console.log(err);
-// 		}
-// 		else 
-// 			console.log("NEWLY CREATED CAMPGROUND:");
-// 			console.log(campground);
-// 	}
-// 	);
-
+app.use(function(req, res, next){
+		res.locals.currentUser = req.user;
+		next();
+});
+// Get route to landing page
 app.get("/",function(req,res){
 	res.render("landing");
 });
@@ -45,7 +51,7 @@ app.get("/campgrounds",function(req,res){
 		else
 		{
 			//render the file
-	res.render("campgrounds/index",{campgrounds : allcampgrounds});
+	res.render("campgrounds/index",{campgrounds : allcampgrounds, currentUser : req.user});
 		}
 	});
 	
@@ -90,7 +96,7 @@ app.get("/campgrounds/:id",function(req, res){
 // =======================
 // Commments Route
 // =======================
-app.get("/campgrounds/:id/comments/new",function(req,res){
+app.get("/campgrounds/:id/comments/new",isLoggedIn, function(req,res){
 	// find campground by id and send the data 
 	campground.findById(req.params.id,function(err, campground){
 		if (err){
@@ -103,7 +109,7 @@ app.get("/campgrounds/:id/comments/new",function(req,res){
 	
 });
 
-app.post("/campgrounds/:id/comments", function(req, res){
+app.post("/campgrounds/:id/comments",isLoggedIn,  function(req, res){
 	// lookup and create comment and redirect to campgrond show page
 	campground.findById(req.params.id, function(err, campground){
 		if (err){
@@ -124,6 +130,47 @@ app.post("/campgrounds/:id/comments", function(req, res){
 		}
 	});
 });
+
+//Authentication routes
+
+app.get("/register",function(req, res){
+	res.render("register");
+});
+app.post("/register",function(req, res){
+	user.register(new user({username : req.body.username}), req.body.password, function(err,user){
+		if (err){
+			console.log(err);
+			return res.render('register');
+		}
+		passport.authenticate("local")(req, res, function(){
+			res.redirect("/campgrounds");
+		})
+	});
+});
+
+// Login Routes
+
+app.post("/login",passport.authenticate("local",{
+	successRedirect: "/campgrounds",
+	failureRedirect : "/login"
+}),function(req , res){
+});
+
+app.get("/login",function(req, res){
+	res.render("login");
+});
+
+// logout routes
+app.get("/logout", function(req, res){
+	req.logout();
+	res.redirect("/campgrounds");
+});
+function isLoggedIn(req, res, next){
+	if (req.isAuthenticated()){
+		return next();
+	}
+	res.redirect("/login");
+}
 
 app.listen(3000,function(){
 	console.log("YelpCamp server has started...");
