@@ -19,7 +19,7 @@ var data = [
 	}
 ];
 function seedDB(){
-	campground.remove({},function(err){
+	campground.deleteMany({},function(err){
 	if(err){
 		console.log(err);
 	}
