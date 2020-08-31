@@ -17,24 +17,28 @@ router.get("/campgrounds",function(req,res){
 	
 });
 // NEW - Show form to create campground
-router.get("/campgrounds/new",function(req,res){
+router.get("/campgrounds/new",isLoggedIn ,function(req,res){
 	res.render("campgrounds/new.ejs")
 });
 // CREATE ADD NEW campground
-router.post("/campgrounds",function(req,res){
+router.post("/campgrounds",isLoggedIn,function(req,res){
 	//get data from form 
 	//add data to campground array
 	var name = req.body.name;
 	var image = req.body.image;
 	var desc = req.body.description;
-	var newCampground = {name : name , image : image, description : desc}; 
+	var author = {
+				id : req.user._id,
+				username : req.user.username
+			}
+	var newCampground = {name : name , image : image, description : desc, author : author}; 
 	campground.create(newCampground, function(err, newlyCreated){
 		if(err){
 			console.log(err);
 		}
 		else{
 			//redirect back to the campgrounds page
-		res.redirect("/campgrounds");
+			res.redirect("/campgrounds");
 		} 
 	});
 });
@@ -51,8 +55,43 @@ router.get("/campgrounds/:id",function(req, res){
 		}
 	});
 	// show template with that campground
-	
 });
+// Edit campground route
+router.get("/campgrounds/:id/edit", function(req, res){
+	campground.findById(req.params.id ,function(err, foundCampground){
+		if (err){
+			res.redirect("/campgrounds");
+		}
+		else {
+			res.render("campgrounds/edit",{campground : foundCampground});
+		}
+	});
+});
+// Update campground route
+router.put("/campgrounds/:id",function(req,res){
+	// find and update and go to show page
+	campground.findByIdAndUpdate(req.params.id, req.body.campground ,function(err, updatedCampground){
+		if (err){
+			res.redirect("/campgrounds");
+			console.log(err);
+		}
+		else {
+			res.redirect("/campgrounds/" + req.params.id);
+		}
+	});
+});
+//Destroy campground route
+router.delete("/campgrounds/:id", function(req, res){
+	campground.findByIdAndRemove(req.params.id,function(err){
+		if (err){
+			res.redirect("/campgrounds");
+		}else {
+			res.redirect("/campgrounds");}
+	})
+});
+
+
+//middleware
 function isLoggedIn(req, res, next){
 	if (req.isAuthenticated()){
 		return next();

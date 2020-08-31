@@ -7,6 +7,7 @@ var express 		= require("express"),
 	comment  		= require("./models/comment"),
 	passport 		= require ("passport"),
 	localStrategy 	= require("passport-local"),
+	methodOverride 	= require("method-override"),
 	user 			= require("./models/user");
 
 app.use(require("express-session")({
@@ -31,10 +32,11 @@ var	indexRoutes = require("./routes/index");
 // ============
 // Mongoose code to connect the  database
 // ============	
-mongoose.connect("mongodb://localhost:27017/yelp_camp",{useNewUrlParser: true,useUnifiedTopology : true});
+mongoose.connect("mongodb://localhost:27017/yelp_camp",{useFindAndModify:false ,useNewUrlParser: true,useUnifiedTopology : true});
 app.use(express.static(__dirname + "/public"));
 app.use(bodyParser.urlencoded({extended : true}));
 app.set("view engine","ejs");
+app.use(methodOverride("_method"));
 // seeding the database with initial data
 // seedDB();
 //requiring the routes
