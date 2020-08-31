@@ -36,7 +36,7 @@ app.use(express.static(__dirname + "/public"));
 app.use(bodyParser.urlencoded({extended : true}));
 app.set("view engine","ejs");
 // seeding the database with initial data
-seedDB();
+// seedDB();
 //requiring the routes
 app.use(indexRoutes);
 app.use(campgroundRoutes);

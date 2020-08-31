@@ -20,35 +20,35 @@ var data = [
 ];
 function seedDB(){
 	campground.deleteMany({},function(err){
-	if(err){
-		console.log(err);
-	}
-	console.log("Removed campgrounds");
-	// add few campground 
-	data.forEach(function(seed){
-	campground.create(seed,function(err, campground){
-		if (err){
-			console.log(err);
-		}
-		else{
-			console.log("added a campground");
-			// create a comment
-			comment.create({
-				text : "This place is great, but please provide internet connetivity",
-				author : "Sourabh"
-			},function(err ,comment){
-				if (err){
-					console.log(err);
-				}
-				else {
-					campground.comments.push(comment);
-					campground.save();
-					console.log("created a new comment");
-				}
-			});
-		}
-	})
-});
+// 	if(err){
+// 		console.log(err);
+// 	}
+// 	console.log("Removed campgrounds");
+// 	// add few campground 
+// 	data.forEach(function(seed){
+// 	campground.create(seed,function(err, campground){
+// 		if (err){
+// 			console.log(err);
+// 		}
+// 		else{
+// 			console.log("added a campground");
+// 			// create a comment
+// 			comment.create({
+// 				text : "This place is great, but please provide internet connetivity",
+// 				author : "Sourabh"
+// 			},function(err ,comment){
+// 				if (err){
+// 					console.log(err);
+// 				}
+// 				else {
+// 					campground.comments.push(comment);
+// 					campground.save();
+// 					console.log("created a new comment");
+// 				}
+// 			});
+// 		}
+// 	})
+// });
 });
 }
 
