@@ -8,13 +8,15 @@ var express 		= require("express"),
 	passport 		= require ("passport"),
 	localStrategy 	= require("passport-local"),
 	methodOverride 	= require("method-override"),
+	flash 			= require("connect-flash"),
 	user 			= require("./models/user");
 
 app.use(require("express-session")({
 	secret :"East or West India is the best",
 	resave : false,
 	saveUninitialized : false
-}))
+}));
+app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
 passport.use(new localStrategy(user.authenticate()));
@@ -24,6 +26,8 @@ passport.deserializeUser(user.deserializeUser());
 
 app.use(function(req, res, next){
 		res.locals.currentUser = req.user;
+		res.locals.error= req.flash("error");
+		res.locals.success= req.flash("success");
 		next();
 });
 var	commentRoutes = require("./routes/comments");
