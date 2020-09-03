@@ -36,7 +36,17 @@ var	indexRoutes = require("./routes/index");
 // ============
 // Mongoose code to connect the  database
 // ============	
-mongoose.connect("mongodb://localhost:27017/yelp_camp",{useFindAndModify:false ,useNewUrlParser: true,useUnifiedTopology : true});
+mongoose.connect("mongodb+srv://Sourabh:SouVin123@yelpcampsourabh.eufnk.mongodb.net/<dbname>?retryWrites=true&w=majority",{
+	useFindAndModify:false,
+	useNewUrlParser: true,
+	useUnifiedTopology : true,
+	useCreateIndex : true
+}).then(()  => {
+	console.log("connected to Database");
+}).catch( err => {
+	console.log("ERROR:" + err.message);
+});
+
 app.use(express.static(__dirname + "/public"));
 app.use(bodyParser.urlencoded({extended : true}));
 app.set("view engine","ejs");
